@@ -19,8 +19,9 @@ public enum TileType {
      * DIRT:Serves as the wall of the tutorial level
      * STONE:Serves as the ground of the tutorial level
      */
-    DIRT(2, false, "Dirt"),
-    STONE(6, true, "Stone");
+    DIRT(17, true, "Dirt"),
+    GRASS(1, true, "Grass"),
+    SKY(179, false, "Sky");
 
     /**
      * Variable name        Type        Description

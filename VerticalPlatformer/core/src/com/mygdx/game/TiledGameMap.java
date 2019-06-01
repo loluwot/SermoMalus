@@ -8,6 +8,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
+import com.badlogic.gdx.physics.box2d.World;
 
 
 public class TiledGameMap extends GameMap {
@@ -15,9 +16,11 @@ public class TiledGameMap extends GameMap {
     TiledMap tiledMap;
     OrthogonalTiledMapRenderer tiledMapRenderer;
 
-    public TiledGameMap () {
-        tiledMap = new TmxMapLoader().load("map.tmx");
-        tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
+    public TiledGameMap (World world) {
+        super(world);
+        tiledMap = new TmxMapLoader().load("test.tmx");
+        MapBodyBuilder.buildShapes(tiledMap, 32, world);
+        tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap, 1/Constants.PPM);
     }
 
     @Override
@@ -32,8 +35,8 @@ public class TiledGameMap extends GameMap {
     }
 
     @Override
-    public void update(float delta) {
-        super.update(delta);
+    public void update(float delta, World world) {
+        super.update(delta, world);
     }
 
     @Override
@@ -44,14 +47,21 @@ public class TiledGameMap extends GameMap {
     @Override
     public TileType getTileTypeC(int layer, int col, int row) {
         Cell cell = ((TiledMapTileLayer) tiledMap.getLayers().get(layer)).getCell(col,row);
-
         if (cell != null) {
             TiledMapTile tile = cell.getTile();
 
             if (tile != null) {
-                int id =  tile.getId();
+                int id = tile.getId();
+                //System.out.println(id);
+
                 return TileType.getTileType(id);
             }
+            else{
+                //System.out.println("who");
+            }
+        }
+        else{
+            //System.out.println("what");
         }
 
         return null;

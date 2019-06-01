@@ -2,6 +2,8 @@ package com.mygdx.game;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.World;
 
 public abstract class Entity {
 
@@ -9,32 +11,29 @@ public abstract class Entity {
     protected EntityType type;
     protected float velocityY = 0;
     protected GameMap map;
-    protected boolean grounded = false;
+    protected Body body;
+    protected boolean grounded = true;
+    protected final float MAXIMUMVELOCITY = 7;
 
-    public Entity(float x, float y, EntityType type, GameMap map) {
+    public Entity(float x, float y, EntityType type, GameMap map, Body body) {
         this.pos = new Vector2 (x,y);
         this.type = type;
         this.map = map;
+        this.body = body;
 
     }
 
 
-    public void update(float deltaTime, float gravity) {
+    public void update(float deltaTime, World world) {
         float newY = pos.y;
-
-        this.velocityY += gravity * deltaTime * getWeight();
-        newY += this.velocityY * deltaTime;
-
+        world.step(1/45f, 8, 3);
+        newY = body.getPosition().y;
         if (map.hitBoxCollide(pos.x, newY, getWidth(), getHeight())) {
-            if (velocityY < 0) {
-                this.pos.y = (float) Math.floor(pos.y);
-                grounded = true;
-            }
-            this.velocityY = 0;
+            grounded = true;
         } else {
-            this.pos.y = newY;
             grounded = false;
         }
+        this.pos.y = newY;
 
     }
 
@@ -42,12 +41,6 @@ public abstract class Entity {
 
     public abstract void render(SpriteBatch batch);
 
-    protected void moveX (float amount) {
-        float newX = this.pos.x + amount;
-        if (!map.hitBoxCollide(newX, pos.y, getWidth(), getHeight())) {
-            this.pos.x = newX;
-        }
-    }
 
     public Vector2 getPos() {
         return pos;
@@ -69,16 +62,13 @@ public abstract class Entity {
         return grounded;
     }
 
-    public int getWidth () {
+    public float getWidth () {
         return type.getWidth();
     }
 
-    public int getHeight () {
+    public float getHeight () {
         return type.getHeight();
     }
 
-    public float getWeight () {
-        return type.getWeight();
-    }
 
 }

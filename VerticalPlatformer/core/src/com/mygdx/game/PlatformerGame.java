@@ -8,13 +8,18 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.physics.box2d.World;
+import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 
 public class PlatformerGame implements Screen {
 	OrthographicCamera camera;
 	SpriteBatch batch;
 	Texture img;
-
+	World world;
 	GameMap gameMap;
+	Box2DDebugRenderer debug;
 	@Override
 	public void render (float delta) {
 		Gdx.gl.glClearColor(1, 0, 0, 1);
@@ -22,38 +27,40 @@ public class PlatformerGame implements Screen {
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 		camera.update();
-		gameMap.update(Gdx.graphics.getDeltaTime());
+		gameMap.update(Gdx.graphics.getDeltaTime(), world);
 		gameMap.render(camera, batch);
-
-		if (Gdx.input.isKeyPressed(Input.Keys.UP) && camera.position.y < 1344) {
-			camera.position.y += 32;
+		debug.render(world, camera.combined);
+		if (Gdx.input.isKeyPressed(Input.Keys.UP) && camera.position.y < 1344/ Constants.PPM) {
+			camera.position.y += 1;
 		}
-		if (Gdx.input.isKeyPressed(Input.Keys.LEFT) && camera.position.x > 256) {
-			camera.position.x -= 32;
+		if (Gdx.input.isKeyPressed(Input.Keys.LEFT) && camera.position.x > 256/Constants.PPM) {
+			camera.position.x -= 1;
 		}
-		if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) && camera.position.x < 1344) {
-			camera.position.x += 32;
+		if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) && camera.position.x < 1344/Constants.PPM) {
+			camera.position.x += 1;
 		}
-		if (Gdx.input.isKeyPressed(Input.Keys.DOWN) && camera.position.y > 256) {
-			camera.position.y -= 32;
+		if (Gdx.input.isKeyPressed(Input.Keys.DOWN) && camera.position.y > 256/Constants.PPM) {
+			camera.position.y -= 1;
 		}
 
 	}
 
 	@Override
 	public void show() {
+		debug = new Box2DDebugRenderer();
+		world = new World(new Vector2(0, -40f), true);
 		batch = new SpriteBatch();
 		img = new Texture(
 				"badlogic.jpg");
 
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false,
-				Gdx.graphics.getWidth(),
-				Gdx.graphics.getHeight());
+				Gdx.graphics.getWidth()/Constants.PPM,
+				Gdx.graphics.getHeight()/Constants.PPM);
 		//128,128);
 		camera.update();
 
-		gameMap = new TiledGameMap();
+		gameMap = new TiledGameMap(world);
 	}
 
 	@Override

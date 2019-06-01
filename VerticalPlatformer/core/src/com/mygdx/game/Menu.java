@@ -42,7 +42,7 @@ public class Menu implements Screen {
         NinePatchDrawable npd = new NinePatchDrawable(atlas.createPatch("buttonDown"));
         BitmapFont font = generator.generateFont(parameter);
         parameter.size = 100;
-        parameter.color = new Color(245/255f, 127/255f, 23/255f, 1);
+        parameter.color = new Color(1, 1, 1, 1);
         parameter.shadowColor = new Color(0,0,0,0.75f);
         parameter.shadowOffsetX = 10;
         parameter.shadowOffsetY = 10;
@@ -67,19 +67,27 @@ public class Menu implements Screen {
         buttonExit.addListener(new InputListener(){
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button){
+                Gdx.app.exit();
                 return true;
             }
         });
         buttonInstructions = new TextButton("INSTRUCTIONS", style);
+        buttonInstructions.addListener(new InputListener(){
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button){
+
+                return true;
+            }
+        });
         Container<TextButton> container = new Container<TextButton>(buttonStart);
-        container.width(200);
-
+        container.width(300);
+        container.height(150);
         Container<TextButton> containerExit = new Container<TextButton>(buttonExit);
-        containerExit.width(200);
-
+        containerExit.width(300);
+        containerExit.height(150);
         Container<TextButton> containerInstruc = new Container<TextButton>(buttonInstructions);
-        containerInstruc.width(275);
-        table.setHeight(300);
+        containerInstruc.width(300);
+        containerInstruc.height(150);
         table.setWidth(Gdx.graphics.getWidth());
         table.center().bottom();
         table.add(container).colspan(1).center();
@@ -87,6 +95,7 @@ public class Menu implements Screen {
         table.add(containerInstruc).colspan(1).center();
         table.row();
         table.add(containerExit).colspan(1).center();
+        table.setHeight(300);
         Gdx.input.setInputProcessor(stage);
 
     }

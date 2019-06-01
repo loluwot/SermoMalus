@@ -1,32 +1,27 @@
 package com.mygdx.game;
 
 public enum EntityType {
-    PLAYER("player", 14, 32, 40);
+    PLAYER("player", 14/Constants.PPM, 32/Constants.PPM);
 
     private String name;
-    private int width, height;
-    private float weight;
+    private float width, height;
 
-    EntityType(String name, int width, int height, float weight) {
+    EntityType(String name, float width, float height) {
         this.name = name;
         this.width = width;
         this.height = height;
-        this.weight = weight;
     }
 
     public String getName() {
         return name;
     }
 
-    public int getWidth() {
+    public float getWidth() {
         return width;
     }
 
-    public int getHeight() {
+    public float getHeight() {
         return height;
     }
 
-    public float getWeight() {
-        return weight;
-    }
 }

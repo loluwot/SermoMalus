@@ -7,6 +7,7 @@ import aurelienribon.tweenengine.TweenManager;
 import aurelienribon.tweenengine.equations.Linear;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
@@ -95,7 +96,9 @@ public class SplashScreen implements Screen {
     public void render(float delta) {
         Gdx.gl.glClearColor(120f/255, 144f/255, 156f/255, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
+        if (Gdx.input.isKeyPressed(Input.Keys.ESCAPE)){
+            ((Game)Gdx.app.getApplicationListener()).setScreen(new Menu());
+        }
         manager.update(delta);
 
         batch.begin();
