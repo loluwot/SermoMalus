@@ -19,7 +19,6 @@ public class Player extends Entity {
         super (x,y, EntityType.PLAYER,map, body);
         image = new Texture ("player.PNG");
     }
-
     @Override
     public void update(float deltaTime, World world) {
         if (Gdx.input.isKeyPressed(Input.Keys.W)&&grounded)
@@ -48,10 +47,7 @@ public class Player extends Entity {
                 }
             }
         }
-        super.update(deltaTime, world);
-        this.pos.x = body.getPosition().x;
-        this.pos.y = body.getPosition().y;
-        this.velocityY = body.getLinearVelocity().y;
+
 
     }
 

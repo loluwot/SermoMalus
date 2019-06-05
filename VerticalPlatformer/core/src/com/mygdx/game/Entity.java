@@ -13,7 +13,7 @@ public abstract class Entity {
     protected GameMap map;
     protected Body body;
     protected boolean grounded = true;
-    protected final float MAXIMUMVELOCITY = 7;
+    protected final float MAXIMUMVELOCITY = 6;
 
     public Entity(float x, float y, EntityType type, GameMap map, Body body) {
         this.pos = new Vector2 (x,y);
@@ -24,19 +24,21 @@ public abstract class Entity {
     }
 
 
-    public void update(float deltaTime, World world) {
-        float newY = pos.y;
-        world.step(1/45f, 8, 3);
-        newY = body.getPosition().y;
+    public void superUpdate(float deltaTime, World world) {
+        float newY = body.getPosition().y;
         if (map.hitBoxCollide(pos.x, newY, getWidth(), getHeight())) {
             grounded = true;
         } else {
             grounded = false;
         }
-        this.pos.y = newY;
+        this.pos.x = body.getPosition().x;
+        this.pos.y = body.getPosition().y;
+        this.velocityY = body.getLinearVelocity().y;
 
     }
+    public void update(float deltaTime, World world){
 
+    }
 
 
     public abstract void render(SpriteBatch batch);

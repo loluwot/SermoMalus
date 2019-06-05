@@ -1,5 +1,7 @@
 package com.mygdx.game;
 
+import aurelienribon.tweenengine.Tween;
+import aurelienribon.tweenengine.TweenManager;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
@@ -27,19 +29,34 @@ public class Menu implements Screen {
     private TextureAtlas atlas;
     private SpriteBatch batch;
     private BitmapFont titleFont;
+    private TweenManager manager;
+    private boolean atCenter;
+    private TextArea textArea;
     public void show(){
+
+
+        atCenter = true;
+        manager = new TweenManager();
         stage = new Stage(new ScreenViewport());
         style = new TextButton.TextButtonStyle();
         atlas = new TextureAtlas("button-packed/pack.atlas");
         table = new Table();
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("Roboto.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-
         FreeTypeFontGenerator generator1 = new FreeTypeFontGenerator(Gdx.files.internal("Deftone.ttf"));
+        TextField.TextFieldStyle textStyle = new TextField.TextFieldStyle();
+
         batch = new SpriteBatch();
         NinePatchDrawable npn = new NinePatchDrawable(atlas.createPatch("buttonUp"));
         NinePatchDrawable npo = new NinePatchDrawable(atlas.createPatch("buttonHover"));
         NinePatchDrawable npd = new NinePatchDrawable(atlas.createPatch("buttonDown"));
+        textStyle.font = generator.generateFont(parameter);
+        textStyle.fontColor = new Color(0,0,0,1);
+        textStyle.background = npn;
+        textArea = new TextArea("Instructions\n\nDur dur dur dur dur dur ", textStyle);
+        textArea.setSize(600,450);
+        textArea.setPosition(Gdx.graphics.getWidth()/2-150, 0);
+        textArea.setColor(1, 1, 1, 0);
         BitmapFont font = generator.generateFont(parameter);
         parameter.size = 100;
         parameter.color = new Color(1, 1, 1, 1);
@@ -75,7 +92,32 @@ public class Menu implements Screen {
         buttonInstructions.addListener(new InputListener(){
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button){
+                if (atCenter) {
+                    Tween.registerAccessor(TextButton.class, new ButtonAccessor());
+                    Tween.set(buttonStart, ButtonAccessor.X).target(buttonStart.getX()).start(manager);
+                    Tween.to(buttonStart, ButtonAccessor.X, 1).target(-300).start(manager);
+                    Tween.set(buttonExit, ButtonAccessor.X).target(buttonExit.getX()).start(manager);
+                    Tween.to(buttonExit, ButtonAccessor.X, 1).target(-300).start(manager);
+                    Tween.set(buttonInstructions, ButtonAccessor.X).target(buttonInstructions.getX()).start(manager);
+                    Tween.to(buttonInstructions, ButtonAccessor.X, 1).target(-300).start(manager);
+                    Tween.registerAccessor(TextArea.class, new TextAreaAccessor());
+                    Tween.set(textArea, TextAreaAccessor.ALPHA).target(0).start(manager);
+                    Tween.to(textArea, TextAreaAccessor.ALPHA, 0.5f).target(1).delay(1).start(manager);
 
+                }
+                else{
+                    Tween.registerAccessor(TextButton.class, new ButtonAccessor());
+                    Tween.set(buttonStart, ButtonAccessor.X).target(buttonStart.getX()).start(manager);
+                    Tween.to(buttonStart, ButtonAccessor.X, 1).target(0).start(manager);
+                    Tween.set(buttonExit, ButtonAccessor.X).target(buttonExit.getX()).start(manager);
+                    Tween.to(buttonExit, ButtonAccessor.X, 1).target(0).start(manager);
+                    Tween.set(buttonInstructions, ButtonAccessor.X).target(buttonInstructions.getX()).start(manager);
+                    Tween.to(buttonInstructions, ButtonAccessor.X, 1).target(0).start(manager);
+                    Tween.registerAccessor(TextArea.class, new TextAreaAccessor());
+                    Tween.set(textArea, TextAreaAccessor.ALPHA).target(1).start(manager);
+                    Tween.to(textArea, TextAreaAccessor.ALPHA, 0.5f).target(0).start(manager);
+                }
+                atCenter = !atCenter;
                 return true;
             }
         });
@@ -102,8 +144,10 @@ public class Menu implements Screen {
     public void render(float delta){
         Gdx.gl.glClearColor(120f/255, 144f/255, 156f/255, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        stage.addActor(textArea);
         stage.addActor(table);
         stage.act(delta);
+        manager.update(delta);
         stage.draw();
         batch.begin();
         titleFont.draw(batch, "Sermo Malus", 0,550,Gdx.graphics.getWidth(), Align.center, true);

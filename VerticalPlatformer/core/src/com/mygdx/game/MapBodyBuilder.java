@@ -16,7 +16,8 @@ public class MapBodyBuilder {
 
     // The pixels per tile. If your tiles are 16x16, this is set to 16f
     private static float ppt = 16;
-
+    private static float x = 0;
+    private static float y = 0;
     public static Array<Body> buildShapes(Map map, float pixels, World world) {
         ppt = pixels;
         MapObjects objects = map.getLayers().get("collidable").getObjects();
@@ -52,7 +53,7 @@ public class MapBodyBuilder {
             Body body = world.createBody(bd);
             FixtureDef def = new FixtureDef();
             def.density = 1;
-            def.friction = 0.5f;
+            def.friction = 0.8f;
             def.shape = shape;
             body.createFixture(def);
 
@@ -65,6 +66,8 @@ public class MapBodyBuilder {
 
     private static PolygonShape getRectangle(RectangleMapObject rectangleObject) {
         Rectangle rectangle = rectangleObject.getRectangle();
+        x = rectangle.x;
+        y = rectangle.y;
         PolygonShape polygon = new PolygonShape();
         Vector2 size = new Vector2((rectangle.x + rectangle.width * 0.5f) / ppt,
                 (rectangle.y + rectangle.height * 0.5f ) / ppt);
