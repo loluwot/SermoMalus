@@ -12,6 +12,8 @@ import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.utils.Array;
 
+
+
 public class MapBodyBuilder {
 
     // The pixels per tile. If your tiles are 16x16, this is set to 16f
@@ -59,6 +61,50 @@ public class MapBodyBuilder {
 
             bodies.add(body);
 
+            shape.dispose();
+        }
+        return bodies;
+    }
+    public static Array<Body> buildShapesSensor(Map map, float pixels, World world) {
+        ppt = pixels;
+        MapObjects objects = map.getLayers().get("sensors").getObjects();
+
+        Array<Body> bodies = new Array<Body>();
+
+        for(MapObject object : objects) {
+
+            if (object instanceof TextureMapObject) {
+                continue;
+            }
+
+            Shape shape;
+
+            if (object instanceof RectangleMapObject) {
+                shape = getRectangle((RectangleMapObject)object);
+            }
+            else if (object instanceof PolygonMapObject) {
+                shape = getPolygon((PolygonMapObject)object);
+            }
+            else if (object instanceof PolylineMapObject) {
+                shape = getPolyline((PolylineMapObject)object);
+            }
+            else if (object instanceof CircleMapObject) {
+                shape = getCircle((CircleMapObject)object);
+            }
+            else {
+                continue;
+            }
+
+            BodyDef bd = new BodyDef();
+            bd.type = BodyDef.BodyType.StaticBody;
+            Body body = world.createBody(bd);
+            FixtureDef def = new FixtureDef();
+            def.isSensor = true;
+            def.density = 1;
+            def.friction = 0.8f;
+            def.shape = shape;
+            body.createFixture(def);
+            bodies.add(body);
             shape.dispose();
         }
         return bodies;

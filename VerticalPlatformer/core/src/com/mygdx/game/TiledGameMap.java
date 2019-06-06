@@ -8,18 +8,23 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
+import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.Array;
 
 
-public class TiledGameMap extends GameMap {
+public class TiledGameMap extends QuizMap {
 
     TiledMap tiledMap;
     OrthogonalTiledMapRenderer tiledMapRenderer;
+    Array<Body> sensors;
 
-    public TiledGameMap (World world) {
+
+    public TiledGameMap(World world, String fileName) {
         super(world);
-        tiledMap = new TmxMapLoader().load("test.tmx");
+        tiledMap = new TmxMapLoader().load(fileName);
         MapBodyBuilder.buildShapes(tiledMap, 32, world);
+        sensors = MapBodyBuilder.buildShapesSensor(tiledMap, 32, world);
         tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap, 1/Constants.PPM);
     }
 

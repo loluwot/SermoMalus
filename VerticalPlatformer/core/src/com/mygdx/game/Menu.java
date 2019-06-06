@@ -2,21 +2,18 @@ package com.mygdx.game;
 
 import aurelienribon.tweenengine.Tween;
 import aurelienribon.tweenengine.TweenManager;
-import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
@@ -24,7 +21,7 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 public class Menu implements Screen {
     private Stage stage;
     private Table table;
-    private TextButton buttonStart, buttonInstructions, buttonExit;
+    private TextButton buttonLevel1, buttonInstructions, buttonExit, buttonLevel2, buttonLevel3;
     private TextButton.TextButtonStyle style;
     private TextureAtlas atlas;
     private SpriteBatch batch;
@@ -32,9 +29,13 @@ public class Menu implements Screen {
     private TweenManager manager;
     private boolean atCenter;
     private TextArea textArea;
+    private ShapeRenderer fade;
+    private float alpha;
     public void show(){
-
-
+        fade.begin();
+        fade.setColor(1,1,1, alpha);
+        fade.rect(0,0,Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        fade.end();
         atCenter = true;
         manager = new TweenManager();
         stage = new Stage(new ScreenViewport());
@@ -72,11 +73,31 @@ public class Menu implements Screen {
         style.checked = npd;
         style.font = font;
         style.fontColor = new Color(0,0,0,1);
-        buttonStart = new TextButton("START", style);
-        buttonStart.addListener(new InputListener(){
+        buttonLevel1 = new TextButton("LEVEL 1", style);
+        buttonLevel1.addListener(new InputListener(){
             @Override
             public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-                ((Game)Gdx.app.getApplicationListener()).setScreen(new PlatformerGame());
+
+                dispose();
+                ((Game)Gdx.app.getApplicationListener()).setScreen(new Level1());
+                return true;
+            }
+        });
+        buttonLevel2 = new TextButton("LEVEL 2", style);
+        buttonLevel2.addListener(new InputListener(){
+            @Override
+            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+                dispose();
+                ((Game)Gdx.app.getApplicationListener()).setScreen(new Level2());
+                return true;
+            }
+        });
+        buttonLevel3 = new TextButton("LEVEL 3", style);
+        buttonLevel3.addListener(new InputListener(){
+            @Override
+            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+                dispose();
+                ((Game)Gdx.app.getApplicationListener()).setScreen(new Level2());
                 return true;
             }
         });
@@ -94,8 +115,8 @@ public class Menu implements Screen {
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button){
                 if (atCenter) {
                     Tween.registerAccessor(TextButton.class, new ButtonAccessor());
-                    Tween.set(buttonStart, ButtonAccessor.X).target(buttonStart.getX()).start(manager);
-                    Tween.to(buttonStart, ButtonAccessor.X, 1).target(-300).start(manager);
+                    Tween.set(buttonLevel1, ButtonAccessor.X).target(buttonLevel1.getX()).start(manager);
+                    Tween.to(buttonLevel1, ButtonAccessor.X, 1).target(-300).start(manager);
                     Tween.set(buttonExit, ButtonAccessor.X).target(buttonExit.getX()).start(manager);
                     Tween.to(buttonExit, ButtonAccessor.X, 1).target(-300).start(manager);
                     Tween.set(buttonInstructions, ButtonAccessor.X).target(buttonInstructions.getX()).start(manager);
@@ -107,8 +128,8 @@ public class Menu implements Screen {
                 }
                 else{
                     Tween.registerAccessor(TextButton.class, new ButtonAccessor());
-                    Tween.set(buttonStart, ButtonAccessor.X).target(buttonStart.getX()).start(manager);
-                    Tween.to(buttonStart, ButtonAccessor.X, 1).target(0).start(manager);
+                    Tween.set(buttonLevel1, ButtonAccessor.X).target(buttonLevel1.getX()).start(manager);
+                    Tween.to(buttonLevel1, ButtonAccessor.X, 1).target(0).start(manager);
                     Tween.set(buttonExit, ButtonAccessor.X).target(buttonExit.getX()).start(manager);
                     Tween.to(buttonExit, ButtonAccessor.X, 1).target(0).start(manager);
                     Tween.set(buttonInstructions, ButtonAccessor.X).target(buttonInstructions.getX()).start(manager);
@@ -121,9 +142,15 @@ public class Menu implements Screen {
                 return true;
             }
         });
-        Container<TextButton> container = new Container<TextButton>(buttonStart);
+        Container<TextButton> container = new Container<TextButton>(buttonLevel1);
         container.width(300);
         container.height(150);
+        Container<TextButton> container1 = new Container<TextButton>(buttonLevel2);
+        container1.width(300);
+        container1.height(150);
+        Container<TextButton> container2 = new Container<TextButton>(buttonLevel3);
+        container2.width(300);
+        container2.height(150);
         Container<TextButton> containerExit = new Container<TextButton>(buttonExit);
         containerExit.width(300);
         containerExit.height(150);
@@ -135,9 +162,11 @@ public class Menu implements Screen {
         table.add(container).colspan(1).center();
         table.row();
         table.add(containerInstruc).colspan(1).center();
+
         table.row();
         table.add(containerExit).colspan(1).center();
         table.setHeight(300);
+        table.setWidth(1000);
         Gdx.input.setInputProcessor(stage);
 
     }
@@ -176,6 +205,9 @@ public class Menu implements Screen {
 
     @Override
     public void dispose () {
-
+        buttonExit.remove();
+        buttonInstructions.remove();
+        buttonLevel1.remove();
+        stage.dispose();
     }
 }

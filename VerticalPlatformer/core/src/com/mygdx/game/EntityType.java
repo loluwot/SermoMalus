@@ -2,7 +2,7 @@ package com.mygdx.game;
 
 public enum EntityType {
     PLAYER("player", 14/Constants.PPM, 32/Constants.PPM),
-    ENEMY("enemy", 16/Constants.PPM, 10/Constants.PPM);
+    ENEMY("enemy", 16/Constants.PPM, 16/Constants.PPM);
 
     private String name;
     private float width, height;
