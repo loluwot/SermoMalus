@@ -22,7 +22,8 @@ public enum TileType {
     DIRT(17, true, "Dirt"),
     GRASS(1, true, "Grass"),
     SKY(179, false, "Sky"),
-    STONE(65, true, "Stone");
+    STONE(65, true, "Stone"),
+    SCHOOL(16, true, "Floor");
 
     /**
      * Variable name        Type        Description

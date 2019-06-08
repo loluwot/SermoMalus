@@ -19,7 +19,7 @@ public class Player extends Entity {
     private float currentJumpPower = 5;
     Texture image;
 
-    public Player (float x, float y, QuizMap map, Body body) {
+    public Player (float x, float y, GameMap map, Body body) {
         super (x,y, EntityType.PLAYER,map, body);
         image = new Texture ("playerGOOD.PNG");
     }

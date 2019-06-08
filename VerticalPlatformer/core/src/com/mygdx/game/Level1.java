@@ -1,9 +1,9 @@
 package com.mygdx.game;
 
-import aurelienribon.tweenengine.Tween;
-import aurelienribon.tweenengine.TweenEquations;
-import aurelienribon.tweenengine.TweenManager;
+import aurelienribon.tweenengine.*;
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -22,9 +22,8 @@ public class Level1 implements Screen {
 	OrthographicCamera camera;
 	SpriteBatch batch;
 	SpriteBatch hudText;
-	Texture img;
 	World world;
-	QuizMap quizMap;
+	GameMap gameMap;
 	TweenManager manager;
 	Box2DDebugRenderer debug;
 	ShapeRenderer statBarRenderer;
@@ -36,57 +35,111 @@ public class Level1 implements Screen {
 	SpriteBatch smoothText;
 	ArrayList<String> questions;
 	ArrayList<Integer> answers;
+	ArrayList<Triplet> possibleAnswers;
+	ShapeRenderer progressBar;
+	Fade fade;
+	ShapeRenderer fadeRenderer;
 	int currentQuestionNumber;
 	int selectedAnswer = -1;
 	float time = 3;
 	int lastAnswer = -1;
+	float timer2 = 2;
+	boolean atDoor;
+	BitmapFont smallerFont;
 	@Override
 	public void render (float delta) {
+
 		textCamera.update();
-		System.out.println(currentSensor + "sensor");
-		Player player = ((Player) quizMap.entities.get(0));
+		System.out.println(atDoor + "sensor");
+		Player player = ((Player) gameMap.entities.get(0));
 
 		Gdx.gl.glClearColor(1, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 		manager.update(delta);
-		if (quizMap.entities.get(0).body.getLinearVelocity().y < mininum){
-			mininum = quizMap.entities.get(0).body.getLinearVelocity().y;
-		}
 
 		camera.update();
 
 		float width = 200;
 		float height = 20;
-		quizMap.update(Gdx.graphics.getDeltaTime(), world);
-		quizMap.render(camera, batch);
+		gameMap.update(Gdx.graphics.getDeltaTime(), world);
+		gameMap.render(camera, batch);
 		System.out.println(time);
 		if (currentSensor == lastAnswer && currentSensor != -1 && time > 0){
 			time-= delta;
 		}
-		else if (currentSensor == lastAnswer && currentSensor != -1 && time <= 0){
+		else if (currentSensor == lastAnswer && currentSensor != -1 && time <= 0 && timer2 == 2){
 			selectedAnswer = currentSensor;
 		}
-		else{
+		else if (time > 0 && (currentSensor != lastAnswer || currentSensor == -1)){
 			time = 3;
 			selectedAnswer = -1;
 		}
-		smoothText.setProjectionMatrix(textCamera.combined);
-
-		smoothText.begin();
-		if(selectedAnswer != -1)
-			smallFont.draw(smoothText, "Testing Testing\n"+(char)('A'+selectedAnswer), (15/2f)*1.5f*Constants.PPM, 12f*1.5f*Constants.PPM, 10f*1.5f*Constants.PPM, Align.center, true);
-		else
-			smallFont.draw(smoothText, "Testing Testing", (15/2f)*1.5f*Constants.PPM, 12f*1.5f*Constants.PPM, 10f*1.5f*Constants.PPM, Align.center, true);
-
-		if (time < 3 && time > 0){
-			smallFont.draw(smoothText, (int)(Math.ceil(time))+"", (15/2f)*1.5f*Constants.PPM, 19/2f*1.5f*Constants.PPM, 10f*1.5f*Constants.PPM, Align.center, true);
+		if (selectedAnswer != -1 && timer2 > 0 && currentQuestionNumber < questions.size()){
+			smoothText.setProjectionMatrix(textCamera.combined);
+			smoothText.begin();
+			String draw = "";
+			if (selectedAnswer == answers.get(currentQuestionNumber)){
+				draw = "Correct Answer!";
+			}
+			else{
+				draw = "Incorrect Answer! The correct answer was " + (char)(answers.get(currentQuestionNumber) +'A') + ") " + possibleAnswers.get(currentQuestionNumber).triplet[answers.get(currentQuestionNumber)];
+			}
+			smallFont.draw(smoothText, draw, (16 / 2f) * 1.5f * Constants.PPM, 23/2f * 1.5f * Constants.PPM, 9f * 1.5f * Constants.PPM, Align.center, true);
+			timer2 -= delta;
+			smoothText.end();
 		}
-		smallFont.draw(smoothText, "A", (18/2f)*1.5f*Constants.PPM, (11/2f)*1.5f*Constants.PPM, 1f*1.5f*Constants.PPM, Align.center, true);
-		smallFont.draw(smoothText, "B", (23/2f)*1.5f*Constants.PPM, (11/2f)*1.5f*Constants.PPM, 1f*1.5f*Constants.PPM, Align.center, true);
-		smallFont.draw(smoothText, "C", (28/2f)*1.5f*Constants.PPM, (11/2f)*1.5f*Constants.PPM, 1f*1.5f*Constants.PPM, Align.center, true);
+		else if (selectedAnswer != -1 && timer2 <= 0){
+			currentQuestionNumber++;
+			timer2 = 2;
+			time = 3;
+			selectedAnswer = -1;
+		}
+		if (currentQuestionNumber < questions.size()) {
+			smoothText.setProjectionMatrix(textCamera.combined);
+			smoothText.begin();
+			smallFont.draw(smoothText, "Question " + (currentQuestionNumber + 1), (15 / 2f) * 1.5f * Constants.PPM, 12f * 1.5f * Constants.PPM, 10f * 1.5f * Constants.PPM, Align.center, true);
+			String question = questions.get(currentQuestionNumber)+ "\n";
+			for (int i = 0; i < 3; i++){
+				question += (char)('A' + i) + ") ";
+				question += possibleAnswers.get(currentQuestionNumber).triplet[i];
+				question += "\n";
+			}
+			if (selectedAnswer == -1) {
+				smallFont.draw(smoothText, question, (16 / 2f) * 1.5f * Constants.PPM, 23 / 2f * 1.5f * Constants.PPM, 9f * 1.5f * Constants.PPM, Align.center, true);
+			}
+			smallFont.draw(smoothText, "A", (19 / 2f) * 1.5f * Constants.PPM, (7 / 2f) * 1.5f * Constants.PPM, 1f * 1.5f * Constants.PPM, Align.center, true);
+			smallFont.draw(smoothText, "B", (24 / 2f) * 1.5f * Constants.PPM, (7 / 2f) * 1.5f * Constants.PPM, 1f * 1.5f * Constants.PPM, Align.center, true);
+			smallFont.draw(smoothText, "C", (29 / 2f) * 1.5f * Constants.PPM, (7 / 2f) * 1.5f * Constants.PPM, 1f * 1.5f * Constants.PPM, Align.center, true);
+			smoothText.end();
+			if (time < 3 && time > 0) {
+				progressBar.setProjectionMatrix(textCamera.combined);
+				progressBar.begin(ShapeRenderer.ShapeType.Line);
+				progressBar.rect((16 / 2f) * 1.5f * Constants.PPM, (17 / 2f) * 1.5f * Constants.PPM, (18 / 2f) * 1.5f * Constants.PPM, (1 / 2f) * 1.5f * Constants.PPM);
+				progressBar.end();
+				progressBar.begin(ShapeRenderer.ShapeType.Filled);
+				progressBar.rect((16 / 2f) * 1.5f * Constants.PPM, (17 / 2f) * 1.5f * Constants.PPM, ((18 / 2f) * 1.5f * Constants.PPM) * (time) / 3f, (1 / 2f) * 1.5f * Constants.PPM);
+				progressBar.end();
+			}
+		}
+		else{
+			smoothText.setProjectionMatrix(textCamera.combined);
+			smoothText.begin();
+			smallFont.draw(smoothText, "The quiz is complete! You can go back to the main menu by going to the door and pressing E.", (15 / 2f) * 1.5f * Constants.PPM, 12f * 1.5f * Constants.PPM, 10f * 1.5f * Constants.PPM, Align.center, true);
+
+			smoothText.end();
+		}
+		if (atDoor){
+			smoothText.setProjectionMatrix(textCamera.combined);
+			smoothText.begin();
+			smallFont.draw(smoothText, "E", (1 / 2f) * 1.5f * Constants.PPM, 12/2f * 1.5f * Constants.PPM, 1/2f * 1.5f * Constants.PPM, Align.center, true);
+			smoothText.end();
+		}
+		smoothText.setProjectionMatrix(textCamera.combined);
+		smoothText.begin();
+		smallerFont.draw(smoothText, "This is the first level. It is a quiz. To answer the question on the screen, move the character to the button labelled with your selected answer. Stay there until the progress bar becomes completely empty. ", (4 / 2f) * 1.5f * Constants.PPM, 24/2f * 1.5f * Constants.PPM, 7/2f * 1.5f * Constants.PPM, Align.center, true);
 		smoothText.end();
-		cameraChange(camera, quizMap, quizMap.entities.get(0).grounded || quizMap.entities.get(0).body.getLinearVelocity().y < -17);
+		cameraChange(camera, gameMap, gameMap.entities.get(0).grounded || gameMap.entities.get(0).body.getLinearVelocity().y < -17);
 		//This is the HUD that shows the player's current movement speed. Movement speed is increased by eating powerups that will temporarily increase movement speed.
 		statBarRenderer.begin(ShapeRenderer.ShapeType.Line);
 		statBarRenderer.setColor(0f,1f,0.5f,0.75f);
@@ -106,22 +159,54 @@ public class Level1 implements Screen {
 		font.draw(hudText, "Movement Speed", 20, 20);
 		font.draw(hudText, "Jump Power", 20,60);
 		hudText.end();
+		if (Gdx.input.isKeyPressed(Input.Keys.E) && atDoor){
+			Tween.registerAccessor(Fade.class, new FadeAccessor());
+			Tween.set(fade, FadeAccessor.ALPHA).target(0).start(manager);
+			Tween.to(fade, FadeAccessor.ALPHA, 1).target(1).start(manager).setCallback(new TweenCallback() {
+				@Override
+				public void onEvent(int type, BaseTween<?> source) {
+					((Game)Gdx.app.getApplicationListener()).setScreen(new Menu(true));
+				}
+			});
+
+		}
 		textCamera.update();
+		fade.draw(fadeRenderer);
 		lastAnswer = currentSensor;
 	}
 
 	@Override
 	public void show() {
+		//add questions
+		questions = new ArrayList<String>();
+		answers = new ArrayList<Integer>();
+		possibleAnswers = new ArrayList<Triplet>();
+		questions.add("Who should you contact if you are experiencing verbal bullying?");
+		questions.add("What is the best response to someone verbally bullying you?");
+		answers.add(2);
+		answers.add(1);
+		possibleAnswers.add(new Triplet("Teacher or Guidance Counsellor", "Parents", "All of the Above"));
+		possibleAnswers.add(new Triplet("Cry", "Ignore them", "Insult them back"));
+		progressBar = new ShapeRenderer();
+		manager = new TweenManager();
+		fade = new Fade(1);
+		fadeRenderer = new ShapeRenderer();
+		Tween.registerAccessor(Fade.class, new FadeAccessor());
+		Tween.set(fade, FadeAccessor.ALPHA).target(1).start(manager);
+		Tween.to(fade, FadeAccessor.ALPHA, 1).target(0).start(manager);
 		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("Roboto.ttf"));
 		FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
 		font = generator.generateFont(parameter);
 		debug = new Box2DDebugRenderer();
 		statBarRenderer = new ShapeRenderer();
 		world = new World(new Vector2(0, -40f), true);
+		World.setVelocityThreshold(0.01f);
 		FreeTypeFontGenerator generator1 = new FreeTypeFontGenerator(Gdx.files.internal("Roboto.ttf"));
 		FreeTypeFontGenerator.FreeTypeFontParameter parameter1 = new FreeTypeFontGenerator.FreeTypeFontParameter();
 		parameter1.size = 20;
 		smallFont = generator1.generateFont(parameter1);
+		parameter1.size = 18;
+		smallerFont = generator1.generateFont(parameter1);
 		batch = new SpriteBatch();
 		hudText = new SpriteBatch();
 		camera = new OrthographicCamera();
@@ -130,22 +215,34 @@ public class Level1 implements Screen {
 				Gdx.graphics.getHeight()/Constants.PPM/1.5f);
 		//128,128);
 		camera.update();
-		manager = new TweenManager();
-		quizMap = new TiledGameMap(world, "quiz.tmx");
-		final Player player = ((Player) quizMap.entities.get(0));
+
+		gameMap = new TiledGameMap(world, "quiz.tmx");
+		final Player player = ((Player) gameMap.entities.get(0));
 		world.setContactListener(new ContactListener() {
 			@Override
 			public void beginContact(Contact contact) {
-				for (int i = 0; i < ((TiledGameMap) quizMap).sensors.size; i++){
-					if (contact.getFixtureA().equals(player.body.getFixtureList().get(0)) && contact.getFixtureB().equals(((TiledGameMap) quizMap).sensors.get(i).getFixtureList().get(0))){
+				for (int i = 0; i < ((TiledGameMap) gameMap).sensors.size; i++){
+					if (contact.getFixtureA().equals(player.body.getFixtureList().get(0)) && contact.getFixtureB().equals(((TiledGameMap) gameMap).sensors.get(i).getFixtureList().get(0))){
 						currentSensor = i;
 						break;
 					}
 				}
+				if (contact.getFixtureA().equals(player.body.getFixtureList().get(0)) && contact.getFixtureB().equals(((TiledGameMap) gameMap).door.get(0).getFixtureList().get(0))){
+					atDoor = true;
+				}
+
 			}
 			@Override
 			public void endContact(Contact contact) {
-				currentSensor = -1;
+				for (int i = 0; i < ((TiledGameMap) gameMap).sensors.size; i++){
+					if (contact.getFixtureA().equals(player.body.getFixtureList().get(0)) && contact.getFixtureB().equals(((TiledGameMap) gameMap).sensors.get(i).getFixtureList().get(0))){
+						currentSensor = -1;
+						break;
+					}
+				}
+				if (contact.getFixtureA().equals(player.body.getFixtureList().get(0)) && contact.getFixtureB().equals(((TiledGameMap) gameMap).door.get(0).getFixtureList().get(0))){
+					atDoor = false;
+				}
 			}
 			@Override
 			public void preSolve(Contact contact, Manifold oldManifold) {
@@ -161,9 +258,9 @@ public class Level1 implements Screen {
 		textCamera.update();
 
 	}
-	public void cameraChange (OrthographicCamera camera, QuizMap map, boolean updateY) {
-		float xPos = quizMap.entities.get(0).body.getPosition().x;
-		float yPos = quizMap.entities.get(0).body.getPosition().y;
+	public void cameraChange (OrthographicCamera camera, GameMap map, boolean updateY) {
+		float xPos = gameMap.entities.get(0).body.getPosition().x;
+		float yPos = gameMap.entities.get(0).body.getPosition().y;
 		if (xPos <= camera.viewportWidth/2) {
 			camera.position.x = camera.viewportWidth/2;
 		}
@@ -178,33 +275,34 @@ public class Level1 implements Screen {
 		}
 		if (updateY) {
 			if (yPos < camera.viewportHeight / 2 && manager.getRunningTweensCount() == 0) {
-				System.out.println(1);
+
 				Tween.registerAccessor(OrthographicCamera.class, new CameraAccessor());
 				Tween.set(camera, CameraAccessor.Y).target(camera.position.y).start(manager);
 				Tween.to(camera, CameraAccessor.Y, 0.5f).target(camera.viewportHeight / 2).start(manager).ease(TweenEquations.easeNone);
 			}
 			if (yPos >= map.getPixelHeight() - camera.viewportHeight / 2) {
 				Tween.registerAccessor(OrthographicCamera.class, new CameraAccessor());
-				System.out.println(2);
+
 				Tween.set(camera, CameraAccessor.Y).target(camera.position.y).start(manager);
 				Tween.to(camera, CameraAccessor.Y, 0.5f).target(map.getPixelHeight() - camera.viewportHeight / 2).start(manager).ease(TweenEquations.easeNone);
 
 			}
 			if (yPos > camera.viewportHeight / 2 && yPos < map.getPixelHeight() - camera.viewportHeight / 2) {
-				System.out.println("bruh");
+
 				Tween.registerAccessor(OrthographicCamera.class, new CameraAccessor());
 				Tween.set(camera, CameraAccessor.Y).target(camera.position.y).start(manager);
-				System.out.println(camera.position.y + "y");
+
 				Tween.to(camera, CameraAccessor.Y, 0.5f).target(yPos).start(manager).ease(TweenEquations.easeNone);
 
 			}
 		}
 		textCamera.position.x = camera.position.x*1.5f*Constants.PPM;
-		System.out.println(textCamera.position.x);
+
 		textCamera.position.y = camera.position.y*1.5f*Constants.PPM;
-		System.out.println(textCamera.position.y);
+
 		textCamera.update();
 		camera.update();
+
 	}
 	@Override
 	public void resize(int width, int height) {
@@ -229,6 +327,9 @@ public class Level1 implements Screen {
 	@Override
 	public void dispose () {
 		batch.dispose();
-		img.dispose();
+		hudText.dispose();
+		smoothText.dispose();
+		statBarRenderer.dispose();
+		progressBar.dispose();
 	}
 }

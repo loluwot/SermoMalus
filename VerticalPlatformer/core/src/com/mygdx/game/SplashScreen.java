@@ -86,7 +86,7 @@ public class SplashScreen implements Screen {
         Tween.to(ball3, EllipsePathAccessor.ALPHA, 1).target(0).delay(14).start(manager).setCallback(new TweenCallback() {
             @Override
             public void onEvent(int type, BaseTween<?> source) {
-                ((Game)Gdx.app.getApplicationListener()).setScreen(new Menu());
+                ((Game)Gdx.app.getApplicationListener()).setScreen(new Menu(false));
             }
         });
 
@@ -97,10 +97,9 @@ public class SplashScreen implements Screen {
         Gdx.gl.glClearColor(120f/255, 144f/255, 156f/255, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         if (Gdx.input.isKeyPressed(Input.Keys.ESCAPE)){
-            ((Game)Gdx.app.getApplicationListener()).setScreen(new Menu());
+            ((Game)Gdx.app.getApplicationListener()).setScreen(new Menu(false));
         }
         manager.update(delta);
-
         batch.begin();
         ball1.draw(batch);
         ball2.draw(batch);

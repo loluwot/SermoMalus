@@ -1,6 +1,8 @@
 package com.mygdx.game;
 
+import aurelienribon.tweenengine.BaseTween;
 import aurelienribon.tweenengine.Tween;
+import aurelienribon.tweenengine.TweenCallback;
 import aurelienribon.tweenengine.TweenManager;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
@@ -29,15 +31,29 @@ public class Menu implements Screen {
     private TweenManager manager;
     private boolean atCenter;
     private TextArea textArea;
-    private ShapeRenderer fade;
-    private float alpha;
+    private Fade fade;
+    private ShapeRenderer fadeRender;
+    private boolean fadeIn;
+    public Menu(boolean fadeIn){
+        this.fadeIn = fadeIn;
+    }
     public void show(){
-        fade.begin();
-        fade.setColor(1,1,1, alpha);
-        fade.rect(0,0,Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        fade.end();
-        atCenter = true;
         manager = new TweenManager();
+
+        if (fadeIn) {
+            fade = new Fade(1);
+        }
+        else{
+            fade = new Fade(0);
+        }
+        fadeRender = new ShapeRenderer();
+        if (fadeIn){
+            Tween.registerAccessor(Fade.class, new FadeAccessor());
+            Tween.set(fade, FadeAccessor.ALPHA).target(1).start(manager);
+            Tween.to(fade, FadeAccessor.ALPHA, 1).target(0).start(manager);
+        }
+        atCenter = true;
+
         stage = new Stage(new ScreenViewport());
         style = new TextButton.TextButtonStyle();
         atlas = new TextureAtlas("button-packed/pack.atlas");
@@ -55,7 +71,7 @@ public class Menu implements Screen {
         textStyle.fontColor = new Color(0,0,0,1);
         textStyle.background = npn;
         textArea = new TextArea("Instructions\n\nDur dur dur dur dur dur ", textStyle);
-        textArea.setSize(600,450);
+        textArea.setSize(600,350);
         textArea.setPosition(Gdx.graphics.getWidth()/2-150, 0);
         textArea.setColor(1, 1, 1, 0);
         BitmapFont font = generator.generateFont(parameter);
@@ -77,9 +93,16 @@ public class Menu implements Screen {
         buttonLevel1.addListener(new InputListener(){
             @Override
             public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+                Tween.registerAccessor(Fade.class, new FadeAccessor());
+                Tween.set(fade, FadeAccessor.ALPHA).target(0).start(manager);
+                Tween.to(fade, FadeAccessor.ALPHA, 1).target(1).start(manager).setCallback(new TweenCallback() {
+                    @Override
+                    public void onEvent(int type, BaseTween<?> source) {
+                        dispose();
+                        ((Game)Gdx.app.getApplicationListener()).setScreen(new Level1());
+                    }
+                });
 
-                dispose();
-                ((Game)Gdx.app.getApplicationListener()).setScreen(new Level1());
                 return true;
             }
         });
@@ -115,8 +138,6 @@ public class Menu implements Screen {
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button){
                 if (atCenter) {
                     Tween.registerAccessor(TextButton.class, new ButtonAccessor());
-                    Tween.set(buttonLevel1, ButtonAccessor.X).target(buttonLevel1.getX()).start(manager);
-                    Tween.to(buttonLevel1, ButtonAccessor.X, 1).target(-300).start(manager);
                     Tween.set(buttonExit, ButtonAccessor.X).target(buttonExit.getX()).start(manager);
                     Tween.to(buttonExit, ButtonAccessor.X, 1).target(-300).start(manager);
                     Tween.set(buttonInstructions, ButtonAccessor.X).target(buttonInstructions.getX()).start(manager);
@@ -159,12 +180,13 @@ public class Menu implements Screen {
         containerInstruc.height(150);
         table.setWidth(Gdx.graphics.getWidth());
         table.center().bottom();
-        table.add(container).colspan(1).center();
+        table.add(container).center();
+        table.add(container1).center();
+        table.add(container2).center();
         table.row();
-        table.add(containerInstruc).colspan(1).center();
-
+        table.add(containerInstruc).colspan(3).center();
         table.row();
-        table.add(containerExit).colspan(1).center();
+        table.add(containerExit).colspan(3).center();
         table.setHeight(300);
         table.setWidth(1000);
         Gdx.input.setInputProcessor(stage);
@@ -181,6 +203,7 @@ public class Menu implements Screen {
         batch.begin();
         titleFont.draw(batch, "Sermo Malus", 0,550,Gdx.graphics.getWidth(), Align.center, true);
         batch.end();
+        fade.draw(fadeRender);
     }
 
     @Override

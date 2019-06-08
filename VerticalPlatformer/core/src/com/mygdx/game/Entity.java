@@ -10,12 +10,12 @@ public abstract class Entity {
     protected Vector2 pos;
     protected EntityType type;
     protected float velocityY = 0;
-    protected QuizMap map;
+    protected GameMap map;
     protected Body body;
     protected boolean grounded = true;
 
 
-    public Entity(float x, float y, EntityType type, QuizMap map, Body body) {
+    public Entity(float x, float y, EntityType type, GameMap map, Body body) {
         this.pos = new Vector2 (x,y);
         this.type = type;
         this.map = map;

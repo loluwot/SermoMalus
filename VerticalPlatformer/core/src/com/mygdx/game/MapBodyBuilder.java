@@ -20,9 +20,9 @@ public class MapBodyBuilder {
     private static float ppt = 16;
     private static float x = 0;
     private static float y = 0;
-    public static Array<Body> buildShapes(Map map, float pixels, World world) {
+    public static Array<Body> buildShapes(Map map, float pixels, World world, String layer, boolean sensor, float friction) {
         ppt = pixels;
-        MapObjects objects = map.getLayers().get("collidable").getObjects();
+        MapObjects objects = map.getLayers().get(layer).getObjects();
 
         Array<Body> bodies = new Array<Body>();
 
@@ -35,7 +35,9 @@ public class MapBodyBuilder {
             Shape shape;
 
             if (object instanceof RectangleMapObject) {
+                System.out.println(x + "x");;
                 shape = getRectangle((RectangleMapObject)object);
+                System.out.println(((RectangleMapObject) object).getRectangle().getX()+ "lllllll");
             }
             else if (object instanceof PolygonMapObject) {
                 shape = getPolygon((PolygonMapObject)object);
@@ -53,23 +55,23 @@ public class MapBodyBuilder {
             BodyDef bd = new BodyDef();
             bd.type = BodyDef.BodyType.StaticBody;
             Body body = world.createBody(bd);
+            body.getPosition().set(x, y);
             FixtureDef def = new FixtureDef();
             def.density = 1;
-            def.friction = 0.8f;
+            def.friction = friction;
             def.shape = shape;
+            def.isSensor = sensor;
             body.createFixture(def);
-
             bodies.add(body);
-
             shape.dispose();
         }
         return bodies;
     }
-    public static Array<Body> buildShapesSensor(Map map, float pixels, World world) {
+    public static Array<Float> buildShapesX(Map map, float pixels, World world, String layer, boolean sensor, float friction) {
         ppt = pixels;
-        MapObjects objects = map.getLayers().get("sensors").getObjects();
+        MapObjects objects = map.getLayers().get(layer).getObjects();
 
-        Array<Body> bodies = new Array<Body>();
+        Array<Float> floats = new Array<Float>();
 
         for(MapObject object : objects) {
 
@@ -80,7 +82,10 @@ public class MapBodyBuilder {
             Shape shape;
 
             if (object instanceof RectangleMapObject) {
+                System.out.println(x + "x");;
                 shape = getRectangle((RectangleMapObject)object);
+                System.out.println(((RectangleMapObject) object).getRectangle().getX()+ "lllllll");
+                floats.add(((RectangleMapObject) object).getRectangle().getX());
             }
             else if (object instanceof PolygonMapObject) {
                 shape = getPolygon((PolygonMapObject)object);
@@ -95,20 +100,45 @@ public class MapBodyBuilder {
                 continue;
             }
 
-            BodyDef bd = new BodyDef();
-            bd.type = BodyDef.BodyType.StaticBody;
-            Body body = world.createBody(bd);
-            FixtureDef def = new FixtureDef();
-            def.isSensor = true;
-            def.density = 1;
-            def.friction = 0.8f;
-            def.shape = shape;
-            body.createFixture(def);
-            bodies.add(body);
-            shape.dispose();
         }
-        return bodies;
+        return floats;
     }
+    public static Array<Float> buildShapesY(Map map, float pixels, World world, String layer, boolean sensor, float friction) {
+        ppt = pixels;
+        MapObjects objects = map.getLayers().get(layer).getObjects();
+
+        Array<Float> floats = new Array<Float>();
+
+        for(MapObject object : objects) {
+
+            if (object instanceof TextureMapObject) {
+                continue;
+            }
+
+            Shape shape;
+
+            if (object instanceof RectangleMapObject) {
+                shape = getRectangle((RectangleMapObject)object);
+                System.out.println(((RectangleMapObject) object).getRectangle().getHeight()+ "mmmmmmm");
+                floats.add(((RectangleMapObject) object).getRectangle().getHeight());
+            }
+            else if (object instanceof PolygonMapObject) {
+                shape = getPolygon((PolygonMapObject)object);
+            }
+            else if (object instanceof PolylineMapObject) {
+                shape = getPolyline((PolylineMapObject)object);
+            }
+            else if (object instanceof CircleMapObject) {
+                shape = getCircle((CircleMapObject)object);
+            }
+            else {
+                continue;
+            }
+
+        }
+        return floats;
+    }
+
 
     private static PolygonShape getRectangle(RectangleMapObject rectangleObject) {
         Rectangle rectangle = rectangleObject.getRectangle();

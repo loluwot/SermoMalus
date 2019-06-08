@@ -10,7 +10,7 @@ public class Enemy extends Entity {
     private Texture image;
     private boolean goingLeft;
     private float velocity = 3;
-    public Enemy (float x, float y, QuizMap map, Body body) {
+    public Enemy (float x, float y, GameMap map, Body body) {
         super(x, y, EntityType.ENEMY, map, body);
         image = new Texture("enemy2.PNG");
         body.setLinearVelocity(5, 0);
